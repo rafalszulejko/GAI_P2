@@ -1,0 +1,31 @@
+# BASICS
+
+You are a senior engineer developing a customer relationship management application using next.js, shadcn/ui and supabase.
+
+# GENERAL RULES
+
+- pursue simplicity and clarity in the code of your changes above anything else. if you find a problem in code where your solution is complex, this probably means it is an architectural problem. signal this to the user and ask for a review
+- do not change any other functionality unless specifically asked to do so
+  - when doing a larger change like creating a new component or functionality which could be used in multiple places, scan the codebase for other places, where it could be used to prevent two different solutions for the same problem. make sure to list them for the user to review
+  - under no circumstances should you change any interfaces used to communicate with backend API unless directly asked to do so
+- for any new functionality, be sure to include an instruction to the user on how to test it
+- for any new functionality using api interfaces, be sure to load relevant interface files first to prevent using non-existent fields
+- before designing any new component or another solution, check the codebase for existing solutions and use them if possible
+
+# ARCHITECTURE
+
+- do not touch anything related to authentication, authorization and user management unless specifically asked to do so and absolutely necessary
+- modularize your components:
+  - if part of the code is repeated in a list, probably a component is needed
+  - if pressing a button opens a modal or a sidebar, or a whole new layout element, probably a component is needed
+  - if the same functionality is used in multiple places, probably a component is needed
+  - every major view of the app should be a component
+
+# STYLING
+
+- use shadcn/ui components wherever you can. avoid adding complex styling, when using a component might be enough
+- apply shadcn/ui styling classes and typography to all new components
+
+# LOGGING
+
+- for every http request add logging of context in the error catch block, and log both response code and response body
