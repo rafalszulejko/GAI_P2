@@ -22,7 +22,7 @@ export default async function ProtectedLayout({
     <div className="flex h-screen">
       <Sidebar />
       <div className="flex-1 flex flex-col">
-        <Navbar />
+        <Navbar user={user} />
         <main className="flex-1 overflow-y-auto p-6">
           {children}
         </main>
