@@ -5,6 +5,14 @@ import { redirect } from 'next/navigation'
 
 type Permission = Database['public']['Enums']['app_permission']
 
+export async function getUserRole() {
+  const supabase = await createClient()
+  const { data: { session } } = await supabase.auth.getSession()
+  const jwtToken = session?.access_token
+  const decodedJWT = jwtToken ? decodeJWT(jwtToken) : null
+  return decodedJWT?.user_role as Database['public']['Enums']['app_role'] | undefined
+}
+
 export async function getUserPermissions() {
   const supabase = await createClient()
   const { data: { session } } = await supabase.auth.getSession()

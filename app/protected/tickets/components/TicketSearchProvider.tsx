@@ -29,7 +29,13 @@ export function useTicketSearch() {
   return context
 }
 
-export default function TicketSearchProvider({ children }: { children: React.ReactNode }) {
+export default function TicketSearchProvider({ 
+  children,
+  isCustomer 
+}: { 
+  children: React.ReactNode
+  isCustomer: boolean 
+}) {
   const [searchParams, setSearchParams] = useState<SearchParams>({})
   const [results, setResults] = useState<any[] | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -45,6 +51,14 @@ export default function TicketSearchProvider({ children }: { children: React.Rea
         .from('ticket')
         .select('*')
         .order('created_at', { ascending: false })
+
+      // If user is a customer, only show their tickets
+      if (isCustomer) {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          query = query.eq('created_by', user.id)
+        }
+      }
 
       if (searchParams.title) {
         query = query.ilike('title', `%${searchParams.title}%`)
@@ -75,7 +89,7 @@ export default function TicketSearchProvider({ children }: { children: React.Rea
     } finally {
       setIsLoading(false)
     }
-  }, [searchParams])
+  }, [searchParams, isCustomer])
 
   const value = {
     searchParams,
