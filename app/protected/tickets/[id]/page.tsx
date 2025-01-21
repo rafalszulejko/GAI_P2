@@ -1,6 +1,7 @@
 import { guardRoute, getUserPermissions } from '@/utils/permissions'
 import { createClient } from '@/utils/supabase/server'
 import TicketMetadata from './components/TicketMetadata'
+import TicketInformation from './components/TicketInformation'
 import TicketChat from './components/TicketChat'
 import CustomerContext from './components/CustomerContext'
 
@@ -18,6 +19,8 @@ export default async function TicketDetailsPage({
   const permissions = await getUserPermissions()
   const canViewChat = permissions.includes('ticket.chat.view')
   const canViewCustomerContext = permissions.includes('ticket.customercontext.view')
+  const canViewTicketInfo = permissions.includes('ticket.info.view')
+  const canViewTicketMetadata = permissions.includes('ticket.metadata.view')
 
   // Fetch ticket data
   const supabase = await createClient()
@@ -40,9 +43,22 @@ export default async function TicketDetailsPage({
   return (
     <div className="container mx-auto py-6">
       <div className="grid grid-cols-12 gap-6">
-        {/* Left column - Ticket Metadata */}
-        <div className="col-span-3">
-          <TicketMetadata ticket={ticket} />
+        {/* Left column - Ticket Information and Metadata */}
+        <div className="col-span-3 space-y-6">
+          {canViewTicketInfo ? (
+            <TicketInformation ticket={ticket} />
+          ) : (
+            <div className="p-4 text-center text-muted-foreground">
+              You don't have permission to view ticket information
+            </div>
+          )}
+          {canViewTicketMetadata ? (
+            <TicketMetadata ticket={ticket} />
+          ) : (
+            <div className="p-4 text-center text-muted-foreground">
+              You don't have permission to view ticket metadata
+            </div>
+          )}
         </div>
 
         {/* Center column - Chat */}
