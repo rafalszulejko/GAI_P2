@@ -4,6 +4,7 @@ import TicketMetadata from './components/TicketMetadata'
 import TicketInformation from './components/TicketInformation'
 import TicketChat from './components/TicketChat'
 import CustomerContext from './components/CustomerContext'
+import TicketChatInput from './components/TicketChatInput'
 
 export default async function TicketDetailsPage({
   params,
@@ -21,6 +22,7 @@ export default async function TicketDetailsPage({
   const canViewCustomerContext = permissions.includes('ticket.customercontext.view')
   const canViewTicketInfo = permissions.includes('ticket.info.view')
   const canViewTicketMetadata = permissions.includes('ticket.metadata.view')
+  const canReplyToChat = permissions.includes('ticket.chat.reply')
 
   // Fetch ticket data
   const supabase = await createClient()
@@ -64,7 +66,10 @@ export default async function TicketDetailsPage({
         {/* Center column - Chat */}
         <div className="col-span-6">
           {canViewChat ? (
-            <TicketChat ticketId={id} />
+            <div className="space-y-4">
+              <TicketChat ticketId={id} />
+              {canReplyToChat && <TicketChatInput ticketId={id} />}
+            </div>
           ) : (
             <div className="p-4 text-center text-muted-foreground">
               You don't have permission to view the chat
