@@ -10,8 +10,9 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { createClient } from '@/utils/supabase/client'
 
 const getPriorityStyle = (priority: string | null) => {
   switch (priority?.toLowerCase()) {
@@ -45,6 +46,24 @@ const getStateStyle = (state: string) => {
 
 export default function TicketTable({ canViewDetails }: { canViewDetails: boolean }) {
   const { results, isLoading, error, performSearch } = useTicketSearch()
+  const [ticketTypes, setTicketTypes] = useState<Record<string, string>>({})
+  const supabase = createClient()
+
+  // Load ticket types
+  useEffect(() => {
+    async function loadTicketTypes() {
+      const { data } = await supabase
+        .from('ticket_type')
+        .select('id, name')
+      
+      if (data) {
+        const types = Object.fromEntries(data.map(type => [type.id, type.name]))
+        setTicketTypes(types)
+      }
+    }
+
+    loadTicketTypes()
+  }, [])
 
   // Load initial data
   useEffect(() => {
@@ -81,6 +100,7 @@ export default function TicketTable({ canViewDetails }: { canViewDetails: boolea
         <TableHeader>
           <TableRow>
             <TableHead>Title</TableHead>
+            <TableHead>Type</TableHead>
             <TableHead>Created At</TableHead>
             <TableHead>State</TableHead>
             <TableHead>Priority</TableHead>
@@ -100,6 +120,9 @@ export default function TicketTable({ canViewDetails }: { canViewDetails: boolea
                 ) : (
                   ticket.title
                 )}
+              </TableCell>
+              <TableCell>
+                {ticket.type ? ticketTypes[ticket.type] || 'Unknown' : 'N/A'}
               </TableCell>
               <TableCell>
                 {new Date(ticket.created_at).toLocaleString(undefined, {

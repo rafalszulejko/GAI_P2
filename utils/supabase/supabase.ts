@@ -110,6 +110,80 @@ export type Database = {
           },
         ]
       }
+      metadata_dict: {
+        Row: {
+          metadata_type: string
+          value: string
+        }
+        Insert: {
+          metadata_type: string
+          value: string
+        }
+        Update: {
+          metadata_type?: string
+          value?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "metadata_dict_metadata_type_fkey"
+            columns: ["metadata_type"]
+            isOneToOne: false
+            referencedRelation: "metadata_type"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      metadata_type: {
+        Row: {
+          id: string
+          name: string
+          type: Database["public"]["Enums"]["metadata_type_type"]
+        }
+        Insert: {
+          id: string
+          name: string
+          type: Database["public"]["Enums"]["metadata_type_type"]
+        }
+        Update: {
+          id?: string
+          name?: string
+          type?: Database["public"]["Enums"]["metadata_type_type"]
+        }
+        Relationships: []
+      }
+      metadata_value: {
+        Row: {
+          metadata_type: string
+          ticket_id: string
+          value: string
+        }
+        Insert: {
+          metadata_type: string
+          ticket_id?: string
+          value: string
+        }
+        Update: {
+          metadata_type?: string
+          ticket_id?: string
+          value?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "metadata_value_metadata_type_fkey"
+            columns: ["metadata_type"]
+            isOneToOne: false
+            referencedRelation: "metadata_type"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "metadata_value_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "ticket"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       role_permissions: {
         Row: {
           id: number
@@ -138,6 +212,7 @@ export type Database = {
           priority: Database["public"]["Enums"]["priority"] | null
           STATE: string
           title: string
+          type: string | null
         }
         Insert: {
           assignee?: string | null
@@ -148,6 +223,7 @@ export type Database = {
           priority?: Database["public"]["Enums"]["priority"] | null
           STATE: string
           title: string
+          type?: string | null
         }
         Update: {
           assignee?: string | null
@@ -158,8 +234,17 @@ export type Database = {
           priority?: Database["public"]["Enums"]["priority"] | null
           STATE?: string
           title?: string
+          type?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "ticket_type_fkey"
+            columns: ["type"]
+            isOneToOne: false
+            referencedRelation: "ticket_type"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ticket_subscriber: {
         Row: {
@@ -180,6 +265,51 @@ export type Database = {
             columns: ["ticket_id"]
             isOneToOne: false
             referencedRelation: "ticket"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ticket_type: {
+        Row: {
+          id: string
+          name: string
+        }
+        Insert: {
+          id: string
+          name: string
+        }
+        Update: {
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      ticket_type_metadata_type: {
+        Row: {
+          metadata_type: string
+          ticket_type: string
+        }
+        Insert: {
+          metadata_type: string
+          ticket_type: string
+        }
+        Update: {
+          metadata_type?: string
+          ticket_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_type_metadata_type_metadata_type_fkey"
+            columns: ["metadata_type"]
+            isOneToOne: false
+            referencedRelation: "metadata_type"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_type_metadata_type_ticket_type_fkey"
+            columns: ["ticket_type"]
+            isOneToOne: false
+            referencedRelation: "ticket_type"
             referencedColumns: ["id"]
           },
         ]
@@ -230,6 +360,7 @@ export type Database = {
         | "ticket.state.edit"
         | "ticket.details"
       app_role: "customer" | "employee" | "admin"
+      metadata_type_type: "TEXT" | "DICT"
       priority: "low" | "normal" | "high" | "urgent"
     }
     CompositeTypes: {

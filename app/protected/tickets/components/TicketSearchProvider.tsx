@@ -7,6 +7,7 @@ type SearchParams = {
   title?: string
   createdBefore?: string
   createdAfter?: string
+  type?: string
 }
 
 type SearchContextType = {
@@ -55,6 +56,10 @@ export default function TicketSearchProvider({ children }: { children: React.Rea
 
       if (searchParams.createdAfter) {
         query = query.gte('created_at', searchParams.createdAfter)
+      }
+
+      if (searchParams.type) {
+        query = query.eq('type', searchParams.type)
       }
 
       const { data, error: searchError } = await query
