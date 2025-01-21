@@ -228,6 +228,7 @@ export type Database = {
         | "ticket.customercontext.view"
         | "ticket.state.view"
         | "ticket.state.edit"
+        | "ticket.details"
       app_role: "customer" | "employee" | "admin"
       priority: "low" | "normal" | "high" | "urgent"
     }

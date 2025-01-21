@@ -1,6 +1,7 @@
 ticket.view
 ticket.list.search
 ticket.list.create
+ticket.details
 ticket.chat.view
 ticket.chat.reply
 ticket.assignee.view

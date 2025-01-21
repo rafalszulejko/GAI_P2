@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { useEffect } from 'react'
+import Link from 'next/link'
 
 const getPriorityStyle = (priority: string | null) => {
   switch (priority?.toLowerCase()) {
@@ -42,7 +43,7 @@ const getStateStyle = (state: string) => {
   }
 }
 
-export default function TicketTable() {
+export default function TicketTable({ canViewDetails }: { canViewDetails: boolean }) {
   const { results, isLoading, error, performSearch } = useTicketSearch()
 
   // Load initial data
@@ -88,7 +89,18 @@ export default function TicketTable() {
         <TableBody>
           {results.map((ticket) => (
             <TableRow key={ticket.id}>
-              <TableCell className="font-medium">{ticket.title}</TableCell>
+              <TableCell className="font-medium">
+                {canViewDetails ? (
+                  <Link 
+                    href={`/protected/tickets/${ticket.id}`}
+                    className="hover:underline text-primary"
+                  >
+                    {ticket.title}
+                  </Link>
+                ) : (
+                  ticket.title
+                )}
+              </TableCell>
               <TableCell>
                 {new Date(ticket.created_at).toLocaleString(undefined, {
                   dateStyle: 'medium',

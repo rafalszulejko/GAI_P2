@@ -11,6 +11,7 @@ export default async function TicketsPage() {
   // Get permissions for conditional rendering
   const permissions = await getUserPermissions()
   const canSearch = permissions.includes('ticket.list.search')
+  const canViewDetails = permissions.includes('ticket.details')
 
   return (
     <div className="container mx-auto py-6 space-y-6">
@@ -24,7 +25,7 @@ export default async function TicketsPage() {
         )}
         
         <Suspense fallback={<div>Loading tickets...</div>}>
-          <TicketTable />
+          <TicketTable canViewDetails={canViewDetails} />
         </Suspense>
       </TicketSearchProvider>
     </div>
