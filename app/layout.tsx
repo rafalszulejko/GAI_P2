@@ -2,20 +2,15 @@ import { ThemeProvider } from "next-themes";
 import { Geist } from "next/font/google";
 import "./globals.css";
 
-const defaultUrl = process.env.VERCEL_URL
-  ? `https://${process.env.VERCEL_URL}`
-  : "http://localhost:3000";
-
-export const metadata = {
-  metadataBase: new URL(defaultUrl),
-  title: "Next.js and Supabase Starter Kit",
-  description: "The fastest way to build apps with Next.js and Supabase",
-};
-
 const geistSans = Geist({
   display: "swap",
   subsets: ["latin"],
 });
+
+export const metadata = {
+  title: "Customer Service Portal",
+  description: "Sign in to access customer service portal",
+};
 
 export default function RootLayout({
   children,
@@ -31,9 +26,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <main className="min-h-screen">
-            {children}
-          </main>
+          {children}
         </ThemeProvider>
       </body>
     </html>
