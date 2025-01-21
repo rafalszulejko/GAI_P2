@@ -1,21 +1,38 @@
 import Link from 'next/link'
+import { Database } from '@/utils/supabase/supabase'
+import { getUserPermissions } from '@/utils/permissions'
 
-const navigation = [
+type Permission = Database['public']['Enums']['app_permission']
+
+interface NavigationItem {
+  name: string
+  href: string
+  permission?: Permission
+}
+
+const navigation: NavigationItem[] = [
   { name: 'Dashboard', href: '/protected' },
-  { name: 'Tickets', href: '/protected/tickets' },
+  { name: 'Tickets', href: '/protected/tickets', permission: 'ticket.view' },
   { name: 'Customers', href: '/protected/customers' },
   { name: 'Organizations', href: '/protected/organizations' },
   { name: 'Admin', href: '/protected/admin' },
 ]
 
-export function Sidebar() {
+export async function Sidebar() {
+  const permissions = await getUserPermissions()
+  
+  // Filter navigation items based on permissions
+  const authorizedNavigation = navigation.filter(item => 
+    !item.permission || permissions.includes(item.permission)
+  )
+
   return (
     <div className="w-64 bg-card border-r">
       <div className="h-16 flex items-center px-6 border-b">
         <span className="text-lg font-semibold">CRM System</span>
       </div>
       <nav className="space-y-1 px-3 py-4">
-        {navigation.map((item) => (
+        {authorizedNavigation.map((item) => (
           <Link
             key={item.name}
             href={item.href}

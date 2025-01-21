@@ -1,15 +1,9 @@
-import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Plus } from "lucide-react";
+import { guardRoute } from "@/utils/permissions";
 
-export default function TicketsPage() {
+export default async function TicketsPage() {
+  // Check permissions before rendering the page
+  await guardRoute('ticket.view')
+
   return (
     <div className="space-y-4">
       <h1 className="text-3xl font-bold">Tickets</h1>
