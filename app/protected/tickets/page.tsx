@@ -3,6 +3,8 @@ import { Suspense } from 'react'
 import TicketTable from './components/TicketTable'
 import TicketSearchForm from './components/TicketSearchForm'
 import TicketSearchProvider from './components/TicketSearchProvider'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 
 export default async function TicketsPage() {
   // Guard the entire page with view permission
@@ -12,10 +14,18 @@ export default async function TicketsPage() {
   const permissions = await getUserPermissions()
   const canSearch = permissions.includes('ticket.list.search')
   const canViewDetails = permissions.includes('ticket.details')
+  const canCreate = permissions.includes('ticket.list.create')
 
   return (
     <div className="container mx-auto py-6 space-y-6">
-      <h1 className="text-3xl font-bold">Tickets</h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold">Tickets</h1>
+        {canCreate && (
+          <Link href="/protected/tickets/create">
+            <Button>Create</Button>
+          </Link>
+        )}
+      </div>
       
       <TicketSearchProvider>
         {canSearch && (
