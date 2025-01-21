@@ -1,13 +1,32 @@
-import { guardRoute } from "@/utils/permissions";
+import { guardRoute, getUserPermissions } from '@/utils/permissions'
+import { Suspense } from 'react'
+import TicketTable from './components/TicketTable'
+import TicketSearchForm from './components/TicketSearchForm'
+import TicketSearchProvider from './components/TicketSearchProvider'
 
 export default async function TicketsPage() {
-  // Check permissions before rendering the page
-  await guardRoute('ticket.view')
+  // Guard the entire page with view permission
+  await guardRoute('ticket.list.view')
+  
+  // Get permissions for conditional rendering
+  const permissions = await getUserPermissions()
+  const canSearch = permissions.includes('ticket.list.search')
 
   return (
-    <div className="space-y-4">
+    <div className="container mx-auto py-6 space-y-6">
       <h1 className="text-3xl font-bold">Tickets</h1>
-      <p className="text-muted-foreground">Manage your support tickets here.</p>
+      
+      <TicketSearchProvider>
+        {canSearch && (
+          <Suspense fallback={<div>Loading search form...</div>}>
+            <TicketSearchForm />
+          </Suspense>
+        )}
+        
+        <Suspense fallback={<div>Loading tickets...</div>}>
+          <TicketTable />
+        </Suspense>
+      </TicketSearchProvider>
     </div>
-  );
+  )
 } 

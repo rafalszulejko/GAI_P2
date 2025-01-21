@@ -55,14 +55,17 @@ export type Database = {
       customer_user: {
         Row: {
           customer_id: string
+          name: string | null
           user_id: string
         }
         Insert: {
           customer_id: string
+          name?: string | null
           user_id: string
         }
         Update: {
           customer_id?: string
+          name?: string | null
           user_id?: string
         }
         Relationships: [
