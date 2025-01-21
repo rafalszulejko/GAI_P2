@@ -1,8 +1,8 @@
 import { guardRoute, getUserPermissions } from '@/utils/permissions'
 import { createClient } from '@/utils/supabase/server'
-import TicketMetadata from '../components/TicketMetadata'
-import TicketChat from '../components/TicketChat'
-import CustomerContext from '../components/CustomerContext'
+import TicketMetadata from './components/TicketMetadata'
+import TicketChat from './components/TicketChat'
+import CustomerContext from './components/CustomerContext'
 
 export default async function TicketDetailsPage({
   params,
