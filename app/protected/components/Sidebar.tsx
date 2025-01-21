@@ -13,9 +13,9 @@ interface NavigationItem {
 const navigation: NavigationItem[] = [
   { name: 'Dashboard', href: '/protected' },
   { name: 'Tickets', href: '/protected/tickets', permission: 'ticket.view' },
-  { name: 'Customers', href: '/protected/customers' },
-  { name: 'Organizations', href: '/protected/organizations' },
-  { name: 'Admin', href: '/protected/admin' },
+  { name: 'Customers', href: '/protected/customers', permission: 'customer.view' },
+  { name: 'Organizations', href: '/protected/organizations', permission: 'org.view' },
+  { name: 'Admin', href: '/protected/admin', permission: 'admin.view' },
 ]
 
 export async function Sidebar() {

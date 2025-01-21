@@ -1,15 +1,8 @@
-import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Plus } from "lucide-react";
+import { guardRoute } from "@/utils/permissions";
 
-export default function OrganizationsPage() {
+export default async function OrganizationsPage() {
+  await guardRoute('org.view')
+
   return (
     <div className="space-y-4">
       <h1 className="text-3xl font-bold">Organizations</h1>
