@@ -1,0 +1,11 @@
+ticket.view
+ticket.list.search
+ticket.list.create
+ticket.chat.view
+ticket.chat.reply
+ticket.assignee.view
+ticket.assignee.edit
+ticket.metadata.edit
+ticket.customercontext.view
+ticket.state.edit
+ticket.state.view
