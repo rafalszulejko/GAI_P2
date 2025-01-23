@@ -5,6 +5,31 @@ import { redirect } from 'next/navigation'
 
 type Permission = Database['public']['Enums']['app_permission']
 
+export async function getAllAppPermissions() {
+  const supabase = await createClient();
+  const { data: permissions, error } = await supabase.rpc('get_app_permissions');
+  
+  if (error) {
+    console.error('Error fetching permissions:', error);
+    return [];
+  }
+  
+  return permissions as Permission[];
+}
+
+export async function getAllAppRoles() {
+  const supabase = await createClient();
+  const { data: roles, error } = await supabase.rpc('get_app_roles');
+  
+  if (error) {
+    console.error('Error fetching roles:', error);
+    return [];
+  }
+  
+  return roles as Database['public']['Enums']['app_role'][];
+}
+
+
 export async function getUserRole() {
   const supabase = await createClient()
   const { data: { session } } = await supabase.auth.getSession()

@@ -8,6 +8,7 @@ export default async function AdminPage() {
   await guardRoute('admin.view');
   const canManageTicketTypes = await hasPermission('admin.tickettype.view');
   const canManageMetadataTypes = await hasPermission('admin.metadata.view');
+  const canManageRoles = await hasPermission('admin.role.view');
 
   return (
     <div className="space-y-4">
@@ -41,6 +42,21 @@ export default async function AdminPage() {
             <CardContent>
               <Button asChild>
                 <Link href="/protected/admin/metadata-types">Manage Custom Fields</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+        {canManageRoles && (
+          <Card>
+            <CardHeader>
+              <CardTitle>User Roles</CardTitle>
+              <CardDescription>
+                Manage user roles and assign detailed application permissions.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild>
+                <Link href="/protected/admin/roles">Manage Roles</Link>
               </Button>
             </CardContent>
           </Card>

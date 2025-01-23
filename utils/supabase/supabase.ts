@@ -343,6 +343,14 @@ export type Database = {
         }
         Returns: Json
       }
+      get_app_permissions: {
+        Args: Record<PropertyKey, never>
+        Returns: string[]
+      }
+      get_app_roles: {
+        Args: Record<PropertyKey, never>
+        Returns: string[]
+      }
     }
     Enums: {
       app_permission:
@@ -369,6 +377,8 @@ export type Database = {
         | "admin.tickettype.edit"
         | "admin.metadata.view"
         | "admin.metadata.edit"
+        | "admin.role.view"
+        | "admin.role.edit"
       app_role: "customer" | "employee" | "admin"
       metadata_type_type: "TEXT" | "DICT"
       priority: "low" | "normal" | "high" | "urgent"
