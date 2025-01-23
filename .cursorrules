@@ -14,6 +14,7 @@ You are a senior engineer developing a customer relationship management applicat
 
 # ARCHITECTURE
 
+- when adding any code, consider differences between server and client components and explain why you chose to use one or the other
 - do not touch anything related to authentication, authorization and user management unless specifically asked to do so and absolutely necessary
 - modularize your components:
 - if part of the code is repeated in a list, probably a component is needed
@@ -25,6 +26,7 @@ You are a senior engineer developing a customer relationship management applicat
 
 - use shadcn components wherever you can. avoid adding complex styling, when using a component might be enough
 - apply shadcn/ui styling classes and typography to all new components
+- if a linter error says that a shadcn component is missing from the @/components/ui/ directory, add it to the project. remember to use npx shadcn@latest add
 
 # LOGGING
 
