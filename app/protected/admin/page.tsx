@@ -7,6 +7,7 @@ import { hasPermission } from "@/utils/permissions";
 export default async function AdminPage() {
   await guardRoute('admin.view');
   const canManageTicketTypes = await hasPermission('admin.tickettype.view');
+  const canManageMetadataTypes = await hasPermission('admin.metadata.view');
 
   return (
     <div className="space-y-4">
@@ -25,6 +26,21 @@ export default async function AdminPage() {
             <CardContent>
               <Button asChild>
                 <Link href="/protected/admin/ticket-types">Manage Ticket Types</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+        {canManageMetadataTypes && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Custom Fields</CardTitle>
+              <CardDescription>
+                Manage reusable custom fields that can be used across different features.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild>
+                <Link href="/protected/admin/metadata-types">Manage Custom Fields</Link>
               </Button>
             </CardContent>
           </Card>

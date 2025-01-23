@@ -367,6 +367,8 @@ export type Database = {
         | "admin.view"
         | "admin.tickettype.view"
         | "admin.tickettype.edit"
+        | "admin.metadata.view"
+        | "admin.metadata.edit"
       app_role: "customer" | "employee" | "admin"
       metadata_type_type: "TEXT" | "DICT"
       priority: "low" | "normal" | "high" | "urgent"
