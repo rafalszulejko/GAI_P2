@@ -29,7 +29,7 @@ export async function Sidebar() {
   return (
     <div className="w-64 bg-card border-r">
       <div className="h-16 flex items-center px-6 border-b">
-        <span className="text-lg font-semibold">CRM System</span>
+        <span className="text-lg font-semibold">AutoCRM</span>
       </div>
       <nav className="space-y-1 px-3 py-4">
         {authorizedNavigation.map((item) => (
