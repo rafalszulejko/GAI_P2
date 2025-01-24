@@ -3,6 +3,7 @@
 import { createClient } from '@/utils/supabase/client'
 import { useEffect, useState } from 'react'
 import { Tables } from '@/utils/supabase/supabase'
+import { RealtimeChannel } from '@supabase/supabase-js'
 
 type Message = Tables<'message'>
 
@@ -13,6 +14,8 @@ export default function TicketChat({ ticketId }: { ticketId: string }) {
   const supabase = createClient()
 
   useEffect(() => {
+    let channel: RealtimeChannel
+
     async function loadMessages() {
       try {
         const { data, error } = await supabase
@@ -31,7 +34,33 @@ export default function TicketChat({ ticketId }: { ticketId: string }) {
       }
     }
 
+    async function setupSubscription() {
+      channel = supabase
+        .channel(`ticket-messages-${ticketId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'message',
+            filter: `ticket_id=eq.${ticketId}`
+          },
+          (payload) => {
+            const newMessage = payload.new as Message
+            setMessages((currentMessages) => [...currentMessages, newMessage])
+          }
+        )
+        .subscribe()
+    }
+
     loadMessages()
+    setupSubscription()
+
+    return () => {
+      if (channel) {
+        supabase.removeChannel(channel)
+      }
+    }
   }, [ticketId])
 
   if (isLoading) {
