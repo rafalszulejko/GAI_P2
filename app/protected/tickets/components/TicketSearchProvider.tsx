@@ -53,7 +53,11 @@ export default function TicketSearchProvider({
       const supabase = createClient()
       let query = supabase
         .from('ticket')
-        .select('*')
+        .select(`
+          *,
+          priority:metadata_value!inner(value)
+        `)
+        .eq('metadata_value.metadata_type', 'PRIORITY')
         .order('created_at', { ascending: false })
 
       // If user is a customer, only show their tickets

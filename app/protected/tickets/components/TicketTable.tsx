@@ -134,8 +134,8 @@ export default function TicketTable({ canViewDetails }: { canViewDetails: boolea
                 <Badge className={getStateStyle(ticket.STATE)}>{ticket.STATE}</Badge>
               </TableCell>
               <TableCell>
-                <Badge className={getPriorityStyle(ticket.priority)}>
-                  {ticket.priority || 'N/A'}
+                <Badge className={getPriorityStyle(ticket.priority[0]?.value)}>
+                  {ticket.priority[0]?.value || 'N/A'}
                 </Badge>
               </TableCell>
             </TableRow>
