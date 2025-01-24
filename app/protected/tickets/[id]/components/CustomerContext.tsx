@@ -20,8 +20,17 @@ type CustomerDetails = {
 }
 
 type TicketSummary = Pick<Tables<'ticket'>, 'id' | 'title' | 'created_at'>
+type UserProfile = Tables<'user_profile'>
 
-export default function CustomerContext({ userId }: { userId: string }) {
+export default function CustomerContext({ 
+  userId,
+  userProfile,
+  canViewCustomerDetails
+}: { 
+  userId: string
+  userProfile: UserProfile | null
+  canViewCustomerDetails: boolean
+}) {
   const [customerDetails, setCustomerDetails] = useState<CustomerDetails | null>(null)
   const [tickets, setTickets] = useState<TicketSummary[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -34,12 +43,9 @@ export default function CustomerContext({ userId }: { userId: string }) {
         // Load customer details
         const { data: customerUser } = await supabase
           .from('customer_user')
-          .select('name, customer_id')
+          .select('customer_id')
           .eq('user_id', userId)
           .single()
-
-        // Load user email
-        const { data: { user } } = await supabase.auth.admin.getUserById(userId)
         
         // Load company name if we have customer_id
         let companyName = null
@@ -53,8 +59,8 @@ export default function CustomerContext({ userId }: { userId: string }) {
         }
 
         setCustomerDetails({
-          name: customerUser?.name || null,
-          email: user?.email || null,
+          name: userProfile?.name || null,
+          email: userProfile?.email || null,
           companyName
         })
 
@@ -75,7 +81,7 @@ export default function CustomerContext({ userId }: { userId: string }) {
     }
 
     loadCustomerContext()
-  }, [userId])
+  }, [userId, userProfile])
 
   if (isLoading) {
     return (
@@ -101,7 +107,18 @@ export default function CustomerContext({ userId }: { userId: string }) {
         <div className="space-y-4">
           <div>
             <div className="text-sm text-muted-foreground">Name</div>
-            <div className="font-medium">{customerDetails?.name || 'N/A'}</div>
+            <div className="font-medium">
+              {canViewCustomerDetails ? (
+                <Link 
+                  href={`/protected/customers/${userId}`}
+                  className="hover:underline text-primary"
+                >
+                  {customerDetails?.name || 'N/A'}
+                </Link>
+              ) : (
+                <span>{customerDetails?.name || 'N/A'}</span>
+              )}
+            </div>
           </div>
           <div>
             <div className="text-sm text-muted-foreground">Email</div>

@@ -44,6 +44,7 @@ export default async function TicketDetailsPage({
   const canViewTicketMetadata = permissions.includes('ticket.metadata.view')
   const canReplyToChat = permissions.includes('ticket.chat.reply')
   const canEditState = permissions.includes('ticket.state.edit')
+  const canViewCustomerDetails = permissions.includes('customer.details.view')
 
   // Fetch ticket data
   const supabase = await createClient()
@@ -62,6 +63,19 @@ export default async function TicketDetailsPage({
       </div>
     )
   }
+
+  // Fetch user profiles for assignee and creator
+  const { data: assigneeProfile } = await supabase
+    .from('user_profile')
+    .select('*')
+    .eq('id', ticket.assignee)
+    .single()
+
+  const { data: creatorProfile } = await supabase
+    .from('user_profile')
+    .select('*')
+    .eq('id', ticket.created_by)
+    .single()
 
   // Ensure ticket.STATE exists and is a string
   if (!ticket.STATE || !userRole) {
@@ -85,6 +99,9 @@ export default async function TicketDetailsPage({
             <TicketInformation 
               ticket={ticket} 
               allowedStates={allowedStates}
+              assigneeProfile={assigneeProfile}
+              creatorProfile={creatorProfile}
+              canViewCustomerDetails={canViewCustomerDetails}
             />
           ) : (
             <div className="p-4 text-center text-muted-foreground">
@@ -119,7 +136,11 @@ export default async function TicketDetailsPage({
         {/* Right column - Customer Context */}
         <div className="col-span-3">
           {canViewCustomerContext ? (
-            <CustomerContext userId={ticket.created_by} />
+            <CustomerContext 
+              userId={ticket.created_by} 
+              userProfile={creatorProfile}
+              canViewCustomerDetails={canViewCustomerDetails}
+            />
           ) : (
             <div className="p-4 text-center text-muted-foreground">
               You don't have permission to view customer context

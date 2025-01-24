@@ -5,33 +5,26 @@ import { useEffect, useState } from 'react'
 import { Tables } from '@/utils/supabase/supabase'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import Link from 'next/link'
 
 type Ticket = Tables<'ticket'>
+type UserProfile = Tables<'user_profile'>
 
 export default function TicketInformation({ 
   ticket,
-  allowedStates
+  allowedStates,
+  assigneeProfile,
+  creatorProfile,
+  canViewCustomerDetails
 }: { 
   ticket: Ticket
   allowedStates: string[]
+  assigneeProfile: UserProfile | null
+  creatorProfile: UserProfile | null
+  canViewCustomerDetails: boolean
 }) {
-  const [creatorName, setCreatorName] = useState<string | null>(null)
   const [isUpdating, setIsUpdating] = useState(false)
   const supabase = createClient()
-
-  useEffect(() => {
-    async function loadCreator() {
-      const { data } = await supabase
-        .from('customer_user')
-        .select('name')
-        .eq('user_id', ticket.created_by)
-        .single()
-
-      setCreatorName(data?.name)
-    }
-
-    loadCreator()
-  }, [ticket.created_by])
 
   const handleStateChange = async (newState: string) => {
     setIsUpdating(true)
@@ -71,8 +64,28 @@ export default function TicketInformation({
 
         <div>
           <div className="text-sm text-muted-foreground">Created By</div>
-          <div className="font-medium">{creatorName}</div>
+          <div className="font-medium">
+            {canViewCustomerDetails ? (
+              <Link 
+                href={`/protected/customers/${ticket.created_by}`}
+                className="hover:underline text-primary"
+              >
+                {creatorProfile?.name || creatorProfile?.email || 'Unknown'}
+              </Link>
+            ) : (
+              <span>{creatorProfile?.name || creatorProfile?.email || 'Unknown'}</span>
+            )}
+          </div>
         </div>
+
+        {ticket.assignee && (
+          <div>
+            <div className="text-sm text-muted-foreground">Assigned To</div>
+            <div className="font-medium">
+              {assigneeProfile?.name || assigneeProfile?.email || 'Unknown'}
+            </div>
+          </div>
+        )}
 
         <div>
           <div className="text-sm text-muted-foreground">Created At</div>
