@@ -73,6 +73,13 @@ export type Database = {
             referencedRelation: "customer_org"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "customer_user_user_id_fkey1"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
         ]
       }
       message: {
