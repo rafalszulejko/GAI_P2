@@ -11,13 +11,18 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { useEffect, useState } from "react"
+import Link from "next/link"
 
 type CustomerUser = Database["public"]["Tables"]["customer_user"]["Row"] & {
   customer_org: Database["public"]["Tables"]["customer_org"]["Row"]
   user_profile: Database["public"]["Tables"]["user_profile"]["Row"]
 }
 
-export function CustomersList() {
+interface CustomersListProps {
+  canViewDetails: boolean
+}
+
+export function CustomersList({ canViewDetails }: CustomersListProps) {
   const [customers, setCustomers] = useState<CustomerUser[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -66,7 +71,18 @@ export function CustomersList() {
           {customers.map((customer) => (
             <TableRow key={`${customer.customer_id}-${customer.user_id}`}>
               <TableCell>{customer.customer_org.name}</TableCell>
-              <TableCell>{customer.user_profile.name}</TableCell>
+              <TableCell>
+                {canViewDetails ? (
+                  <Link 
+                    href={`/protected/customers/${customer.user_id}`}
+                    className="hover:underline"
+                  >
+                    {customer.user_profile.name}
+                  </Link>
+                ) : (
+                  customer.user_profile.name
+                )}
+              </TableCell>
               <TableCell>{customer.user_profile.email}</TableCell>
               <TableCell>{customer.user_profile.location}</TableCell>
             </TableRow>
