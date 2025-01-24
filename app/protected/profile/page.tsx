@@ -1,6 +1,10 @@
 import { createClient } from '@/utils/supabase/server'
 import { decodeJWT } from '@/utils/utils'
 import { Database } from '@/utils/supabase/supabase'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Label } from "@/components/ui/label"
+import { Badge } from "@/components/ui/badge"
+import ProfileForm from './components/ProfileForm'
 
 export default async function ProfilePage() {
   const supabase = await createClient()
@@ -17,40 +21,62 @@ export default async function ProfilePage() {
     .select('permission')
     .eq('role', userRole) : { data: null }
 
+  // Fetch user profile
+  const { data: profileData } = user ? await supabase
+    .from('user_profile')
+    .select('name, location, email')
+    .eq('id', user.id)
+    .single() : { data: null }
+
+  const lastLoginAt = decodedJWT?.exp ? new Date(decodedJWT.exp * 1000).toLocaleString() : 'Unknown'
+
   return (
     <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-medium">Profile</h3>
-        <p className="text-sm text-muted-foreground">
-          Your profile information
-        </p>
-      </div>
-      <div className="space-y-4">
-        <div>
-          <h4 className="text-sm font-medium mb-2">User Object</h4>
-          <div className="rounded-md bg-muted p-4">
-            <pre className="whitespace-pre-wrap break-all">
-              {JSON.stringify(user, null, 2)}
-            </pre>
+
+
+      <Card>
+        <CardHeader>
+          <CardTitle>User Information</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-1">
+            <Label>User ID</Label>
+            <p className="text-sm font-mono bg-muted p-2 rounded-md">{user?.id}</p>
           </div>
-        </div>
-        <div>
-          <h4 className="text-sm font-medium mb-2">JWT Claims</h4>
-          <div className="rounded-md bg-muted p-4">
-            <pre className="whitespace-pre-wrap break-all">
-              {JSON.stringify(decodedJWT, null, 2)}
-            </pre>
+
+          <ProfileForm 
+            userId={user?.id ?? ''} 
+            initialEmail={profileData?.email ?? user?.email ?? ''} 
+            initialName={profileData?.name ?? ''} 
+            initialLocation={profileData?.location ?? ''} 
+          />
+
+          <div className="space-y-1">
+            <Label>Role</Label>
+            <div>
+              <Badge variant="secondary" className="text-xs">
+                {userRole ?? 'No role assigned'}
+              </Badge>
+            </div>
           </div>
-        </div>
-        <div>
-          <h4 className="text-sm font-medium mb-2">Role Permissions</h4>
-          <div className="rounded-md bg-muted p-4">
-            <pre className="whitespace-pre-wrap break-all">
-              {JSON.stringify(rolePermissions, null, 2)}
-            </pre>
+
+          <div className="space-y-1">
+            <Label>Last Login</Label>
+            <p className="text-sm text-muted-foreground">{lastLoginAt}</p>
           </div>
-        </div>
-      </div>
+
+          <div className="space-y-1">
+            <Label>Permissions</Label>
+            <div className="flex flex-wrap gap-1">
+              {rolePermissions?.map((p) => (
+                <Badge key={p.permission} variant="outline" className="text-xs">
+                  {p.permission}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 } 

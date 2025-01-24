@@ -1,6 +1,9 @@
 import { getUserRole } from "@/utils/permissions";
 import { createClient } from "@/utils/supabase/server";
 import { PostgrestSingleResponse } from "@supabase/supabase-js";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
 
 export default async function DashboardPage() {
   const userRole = await getUserRole();
@@ -12,9 +15,25 @@ export default async function DashboardPage() {
     NEW: 0
   };
 
+  let userProfile = {
+    name: null,
+    location: null
+  };
+
   const { data: { user } } = await supabase.auth.getUser();
   if (user) {
     const userId = user.id;
+
+    // Fetch user profile
+    const { data: profileData } = await supabase
+      .from('user_profile')
+      .select('name, location')
+      .eq('id', userId)
+      .single();
+
+    if (profileData) {
+      userProfile = profileData;
+    }
 
     if (userRole === 'customer') {
       // Fetch ticket counts for each state
@@ -63,19 +82,64 @@ export default async function DashboardPage() {
     }
   }
 
+  const hasIncompleteProfile = !userProfile.name || !userProfile.location;
+  const welcomeMessage = userProfile.name ? `Welcome back, ${userProfile.name}` : "Welcome";
+
   return (
-    <div className="space-y-4">
-      <h1 className="text-3xl font-bold">Dashboard</h1>
+    <div className="space-y-6">
+      <h1 className="text-3xl font-bold">{welcomeMessage}</h1>
       
       {userRole === 'customer' ? (
-        <p className="text-muted-foreground">
-          You have <span className="text-lg font-medium text-primary">{ticketStats.PENDING}</span> pending tickets to take action. 
-          There are <span className="text-lg font-medium text-primary">{ticketStats.OPEN}</span> tickets currently processed by our agents and <span className="text-lg font-medium text-primary">{ticketStats.NEW}</span> are waiting.
-        </p>
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Pending Action</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{ticketStats.PENDING}</div>
+              <p className="text-xs text-muted-foreground">Tickets waiting for your response</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm font-medium text-muted-foreground">In Progress</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{ticketStats.OPEN}</div>
+              <p className="text-xs text-muted-foreground">Tickets being processed</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm font-medium text-muted-foreground">New</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{ticketStats.NEW}</div>
+              <p className="text-xs text-muted-foreground">Tickets waiting to be processed</p>
+            </CardContent>
+          </Card>
+        </div>
       ) : userRole === 'employee' ? (
-        <p className="text-muted-foreground">
-          You have currently <span className="text-lg font-medium text-primary">{ticketStats.OPEN}</span> tickets assigned to you, waiting for your action, while <span className="text-lg font-medium text-primary">{ticketStats.PENDING}</span> are waiting for the customer response.
-        </p>
+        <div className="grid gap-4 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Assigned to You</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{ticketStats.OPEN}</div>
+              <p className="text-xs text-muted-foreground">Tickets waiting for your action</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Pending Customer</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{ticketStats.PENDING}</div>
+              <p className="text-xs text-muted-foreground">Tickets waiting for customer response</p>
+            </CardContent>
+          </Card>
+        </div>
       ) : userRole === 'admin' ? (
         <p className="text-muted-foreground">
           This message was written by the admin. Admins are the best!!!
@@ -84,6 +148,14 @@ export default async function DashboardPage() {
         <p className="text-muted-foreground">
           You seem to have no role assigned. Please message me to assign you a role!
         </p>
+      )}
+
+      {hasIncompleteProfile && (
+        <Alert>
+          <AlertDescription>
+            At least one information in your profile is missing. Head to <Link href="/protected/profile" className="underline font-medium">your profile page</Link> to fill it.
+          </AlertDescription>
+        </Alert>
       )}
     </div>
   )
