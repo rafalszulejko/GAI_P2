@@ -55,17 +55,14 @@ export type Database = {
       customer_user: {
         Row: {
           customer_id: string
-          name: string | null
           user_id: string
         }
         Insert: {
           customer_id: string
-          name?: string | null
           user_id: string
         }
         Update: {
           customer_id?: string
-          name?: string | null
           user_id?: string
         }
         Relationships: [
@@ -313,6 +310,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_profile: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          location: string | null
+          name: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id: string
+          location?: string | null
+          name?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          location?: string | null
+          name?: string | null
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {

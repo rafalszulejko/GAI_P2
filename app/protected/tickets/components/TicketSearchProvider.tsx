@@ -8,6 +8,10 @@ type SearchParams = {
   createdBefore?: string
   createdAfter?: string
   type?: string
+  createdBy?: string
+  assignee?: string
+  state?: string
+  priority?: string
 }
 
 type SearchContextType = {
@@ -74,6 +78,35 @@ export default function TicketSearchProvider({
 
       if (searchParams.type) {
         query = query.eq('type', searchParams.type)
+      }
+
+      if (searchParams.createdBy) {
+        query = query.eq('created_by', searchParams.createdBy)
+      }
+
+      if (searchParams.assignee) {
+        query = query.eq('assignee', searchParams.assignee)
+      }
+
+      if (searchParams.state) {
+        query = query.eq('STATE', searchParams.state)
+      }
+
+      if (searchParams.priority) {
+        const { data: metadataValues } = await supabase
+          .from('metadata_value')
+          .select('ticket_id')
+          .eq('metadata_type', 'PRIORITY')
+          .eq('value', searchParams.priority)
+
+        if (metadataValues && metadataValues.length > 0) {
+          const ticketIds = metadataValues.map(mv => mv.ticket_id)
+          query = query.in('id', ticketIds)
+        } else {
+          // If no tickets have the selected priority value, return no results
+          setResults([])
+          return
+        }
       }
 
       const { data, error: searchError } = await query

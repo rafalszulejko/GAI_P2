@@ -8,25 +8,32 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { Tables } from '@/utils/supabase/supabase'
+import MetadataSearchField from './MetadataSearchField'
+import UserSearchField from './UserSearchField'
 
 type TicketType = Tables<'ticket_type'>
+type UserProfile = Tables<'user_profile'>
+
+const TICKET_STATES = ['NEW', 'OPEN', 'PENDING', 'SOLVED', 'CLOSED']
 
 export default function TicketSearchForm() {
   const { searchParams, setSearchParams, performSearch } = useTicketSearch()
   const [ticketTypes, setTicketTypes] = useState<TicketType[]>([])
+  const [users, setUsers] = useState<UserProfile[]>([])
   const supabase = createClient()
 
   useEffect(() => {
-    async function loadTicketTypes() {
-      const { data } = await supabase
-        .from('ticket_type')
-        .select('*')
-        .order('name')
+    async function loadData() {
+      const [ticketTypesResponse, usersResponse] = await Promise.all([
+        supabase.from('ticket_type').select('*').order('name'),
+        supabase.from('user_profile').select('*').not('name', 'is', null).order('name')
+      ])
       
-      setTicketTypes(data || [])
+      setTicketTypes(ticketTypesResponse.data || [])
+      setUsers(usersResponse.data || [])
     }
 
-    loadTicketTypes()
+    loadData()
   }, [])
 
   const handleReset = () => {
@@ -85,6 +92,47 @@ export default function TicketSearchForm() {
             onChange={(e) => setSearchParams({ ...searchParams, createdBefore: e.target.value })}
           />
         </div>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-4">
+        <UserSearchField
+          label="Created By"
+          value={searchParams.createdBy || ''}
+          onChange={(value) => setSearchParams({ ...searchParams, createdBy: value })}
+          users={users}
+        />
+
+        <UserSearchField
+          label="Assignee"
+          value={searchParams.assignee || ''}
+          onChange={(value) => setSearchParams({ ...searchParams, assignee: value })}
+          users={users}
+        />
+
+        <div className="space-y-2">
+          <Label htmlFor="state">State</Label>
+          <Select
+            value={searchParams.state || ''}
+            onValueChange={(value) => setSearchParams({ ...searchParams, state: value })}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select state" />
+            </SelectTrigger>
+            <SelectContent>
+              {TICKET_STATES.map((state) => (
+                <SelectItem key={state} value={state}>
+                  {state}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <MetadataSearchField
+          metadataTypeId="PRIORITY"
+          value={searchParams.priority || ''}
+          onChange={(value) => setSearchParams({ ...searchParams, priority: value })}
+        />
       </div>
 
       <div className="flex justify-end gap-2">
