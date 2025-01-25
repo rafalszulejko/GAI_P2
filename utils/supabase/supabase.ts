@@ -206,6 +206,51 @@ export type Database = {
         }
         Relationships: []
       }
+      team: {
+        Row: {
+          id: string
+          name: string
+        }
+        Insert: {
+          id?: string
+          name: string
+        }
+        Update: {
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      team_member: {
+        Row: {
+          team_id: string
+          user_id: string
+        }
+        Insert: {
+          team_id: string
+          user_id: string
+        }
+        Update: {
+          team_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_member_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "team"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_member_user_id_fkey1"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ticket: {
         Row: {
           assignee: string | null
@@ -411,6 +456,8 @@ export type Database = {
         | "customer.details.edit"
         | "customer.context.view"
         | "org.details.view"
+        | "admin.users.view"
+        | "admin.users.edit"
       app_role: "customer" | "employee" | "admin"
       metadata_type_type: "TEXT" | "DICT"
       priority: "low" | "normal" | "high" | "urgent"

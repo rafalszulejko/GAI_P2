@@ -9,6 +9,7 @@ export default async function AdminPage() {
   const canManageTicketTypes = await hasPermission('admin.tickettype.view');
   const canManageMetadataTypes = await hasPermission('admin.metadata.view');
   const canManageRoles = await hasPermission('admin.role.view');
+  const canManageUsers = await hasPermission('admin.users.view');
 
   return (
     <div className="space-y-4">
@@ -57,6 +58,21 @@ export default async function AdminPage() {
             <CardContent>
               <Button asChild>
                 <Link href="/protected/admin/roles">Manage Roles</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+        {canManageUsers && (
+          <Card>
+            <CardHeader>
+              <CardTitle>User Management</CardTitle>
+              <CardDescription>
+                Manage system users, their profiles and access settings.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild>
+                <Link href="/protected/admin/users">Manage Users</Link>
               </Button>
             </CardContent>
           </Card>
