@@ -10,6 +10,7 @@ export default async function AdminPage() {
   const canManageMetadataTypes = await hasPermission('admin.metadata.view');
   const canManageRoles = await hasPermission('admin.role.view');
   const canManageUsers = await hasPermission('admin.users.view');
+  const canManageTeams = await hasPermission('admin.teams.view');
 
   return (
     <div className="space-y-4">
@@ -73,6 +74,21 @@ export default async function AdminPage() {
             <CardContent>
               <Button asChild>
                 <Link href="/protected/admin/users">Manage Users</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+        {canManageTeams && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Team Management</CardTitle>
+              <CardDescription>
+                Manage teams and their members to organize your support structure.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild>
+                <Link href="/protected/admin/teams">Manage Teams</Link>
               </Button>
             </CardContent>
           </Card>

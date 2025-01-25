@@ -465,6 +465,8 @@ export type Database = {
         | "org.details.view"
         | "admin.users.view"
         | "admin.users.edit"
+        | "admin.teams.view"
+        | "admin.teams.edit"
       app_role: "customer" | "employee" | "admin"
       metadata_type_type: "TEXT" | "DICT"
       priority: "low" | "normal" | "high" | "urgent"
