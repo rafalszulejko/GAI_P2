@@ -167,7 +167,6 @@ export function TeamMembersList({ teams, users, canEdit }: TeamMembersListProps)
           <Select
             value={selectedTeam?.id}
             onValueChange={(id) => handleTeamChange(teams.find(t => t.id === id)!)}
-            className="w-[200px]"
           >
             <SelectTrigger>
               <SelectValue placeholder="Select a team">
