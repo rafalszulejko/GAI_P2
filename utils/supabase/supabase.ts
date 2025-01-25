@@ -86,25 +86,32 @@ export type Database = {
         Row: {
           content: string
           created_at: string
-          created_by: string | null
+          created_by: string
           id: string
           ticket_id: string
         }
         Insert: {
           content: string
           created_at?: string
-          created_by?: string | null
+          created_by?: string
           id?: string
           ticket_id: string
         }
         Update: {
           content?: string
           created_at?: string
-          created_by?: string | null
+          created_by?: string
           id?: string
           ticket_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "message_created_by_fkey1"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "message_ticket_id_fkey"
             columns: ["ticket_id"]

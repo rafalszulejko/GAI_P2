@@ -5,7 +5,11 @@ import { useEffect, useState } from 'react'
 import { Tables } from '@/utils/supabase/supabase'
 import { RealtimeChannel } from '@supabase/supabase-js'
 
-type Message = Tables<'message'>
+type UserProfile = Pick<Tables<'user_profile'>, 'id' | 'name' | 'email'>
+
+type Message = Tables<'message'> & {
+  user_profile: UserProfile | null
+}
 
 export default function TicketChat({ ticketId }: { ticketId: string }) {
   const [messages, setMessages] = useState<Message[]>([])
@@ -20,7 +24,14 @@ export default function TicketChat({ ticketId }: { ticketId: string }) {
       try {
         const { data, error } = await supabase
           .from('message')
-          .select('*')
+          .select(`
+            *,
+            user_profile:created_by(
+              id,
+              name,
+              email
+            )
+          `)
           .eq('ticket_id', ticketId)
           .order('created_at', { ascending: true })
 
@@ -45,9 +56,19 @@ export default function TicketChat({ ticketId }: { ticketId: string }) {
             table: 'message',
             filter: `ticket_id=eq.${ticketId}`
           },
-          (payload) => {
-            const newMessage = payload.new as Message
-            setMessages((currentMessages) => [...currentMessages, newMessage])
+          async (payload) => {
+            const newMessage = payload.new as Tables<'message'>
+            // Fetch user profile for the new message
+            const { data: userProfile } = await supabase
+              .from('user_profile')
+              .select('id, name, email')
+              .eq('id', newMessage.created_by)
+              .single()
+            
+            setMessages((currentMessages) => [
+              ...currentMessages, 
+              { ...newMessage, user_profile: userProfile as UserProfile }
+            ])
           }
         )
         .subscribe()
@@ -91,11 +112,16 @@ export default function TicketChat({ ticketId }: { ticketId: string }) {
         ) : (
           messages.map((message) => (
             <div key={message.id} className="p-4 border rounded-lg">
-              <div className="text-sm text-muted-foreground">
-                {new Date(message.created_at).toLocaleString(undefined, {
-                  dateStyle: 'medium',
-                  timeStyle: 'short'
-                })}
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <span className="font-medium text-foreground">
+                  {message.user_profile?.name || message.user_profile?.email || 'Unknown user'}
+                </span>
+                <span>
+                  {new Date(message.created_at).toLocaleString(undefined, {
+                    dateStyle: 'medium',
+                    timeStyle: 'short'
+                  })}
+                </span>
               </div>
               <div className="mt-1">{message.content}</div>
             </div>
