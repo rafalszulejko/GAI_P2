@@ -4,6 +4,7 @@ import { createClient } from '@/utils/supabase/client'
 import { useEffect, useState } from 'react'
 import { Tables } from '@/utils/supabase/supabase'
 import { RealtimeChannel } from '@supabase/supabase-js'
+import Markdown from 'react-markdown'
 
 type UserProfile = Pick<Tables<'user_profile'>, 'id' | 'name' | 'email'>
 
@@ -123,7 +124,9 @@ export default function TicketChat({ ticketId }: { ticketId: string }) {
                   })}
                 </span>
               </div>
-              <div className="mt-1">{message.content}</div>
+              <div className="mt-1 prose prose-sm dark:prose-invert max-w-none">
+                <Markdown>{message.content}</Markdown>
+              </div>
             </div>
           ))
         )}
