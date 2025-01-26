@@ -89,7 +89,7 @@ export default function TicketTable({ canViewDetails }: { canViewDetails: boolea
   if (!results?.length) {
     return (
       <div className="p-4 text-center text-muted-foreground">
-        No tickets found
+        No tickets found or you do not have permissions to view results of the current search.
       </div>
     )
   }

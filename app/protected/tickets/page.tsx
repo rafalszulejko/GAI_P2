@@ -13,11 +13,12 @@ export default async function TicketsPage() {
   // Get permissions for conditional rendering
   const permissions = await getUserPermissions()
   const userRole = await getUserRole()
-  const isCustomer = userRole === 'customer'
   
   const canSearch = permissions.includes('ticket.list.search')
   const canViewDetails = permissions.includes('ticket.details')
   const canCreate = permissions.includes('ticket.list.create')
+  const canViewTeams = permissions.includes('ticket.team.view')
+  const canViewUsers = permissions.includes('admin.users.view')
 
   return (
     <div className="container mx-auto py-6 space-y-6">
@@ -30,10 +31,10 @@ export default async function TicketsPage() {
         )}
       </div>
       
-      <TicketSearchProvider isCustomer={isCustomer}>
+      <TicketSearchProvider role={userRole as 'customer' | 'employee' | 'admin'}>
         {canSearch && (
           <Suspense fallback={<div>Loading search form...</div>}>
-            <TicketSearchForm />
+            <TicketSearchForm canViewTeams={canViewTeams} canViewUsers={canViewUsers} />
           </Suspense>
         )}
         

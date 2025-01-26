@@ -10,16 +10,25 @@ import { createClient } from '@/utils/supabase/client'
 import { Tables } from '@/utils/supabase/supabase'
 import MetadataSearchField from './MetadataSearchField'
 import UserSearchField from './UserSearchField'
+import { Checkbox } from '@/components/ui/checkbox'
 
 type TicketType = Tables<'ticket_type'>
 type UserProfile = Tables<'user_profile'>
+type TeamResponse = {
+  team: {
+    id: string
+    name: string
+  }
+}
 
 const TICKET_STATES = ['NEW', 'OPEN', 'PENDING', 'SOLVED', 'CLOSED']
 
-export default function TicketSearchForm() {
+export default function TicketSearchForm({ canViewTeams, canViewUsers }: { canViewTeams: boolean, canViewUsers: boolean }) {
   const { searchParams, setSearchParams, performSearch } = useTicketSearch()
   const [ticketTypes, setTicketTypes] = useState<TicketType[]>([])
   const [users, setUsers] = useState<UserProfile[]>([])
+  const [userTeams, setUserTeams] = useState<{ id: string; name: string }[]>([])
+  const [selectedTeams, setSelectedTeams] = useState<string[]>([])
   const supabase = createClient()
 
   useEffect(() => {
@@ -36,7 +45,49 @@ export default function TicketSearchForm() {
     loadData()
   }, [])
 
+  useEffect(() => {
+    async function loadTeams() {
+      if (!canViewTeams) return
+
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const { data: teams } = await supabase
+        .from('team_member')
+        .select(`
+          team:team_id (
+            id,
+            name
+          )
+        `)
+        .eq('user_id', user.id) as { data: TeamResponse[] | null }
+
+      if (teams) {
+        setUserTeams(teams.map(t => ({
+          id: t.team.id,
+          name: t.team.name
+        })))
+      }
+    }
+
+    loadTeams()
+  }, [canViewTeams])
+
+  const handleTeamSelect = (teamId: string) => {
+    setSelectedTeams(prev => 
+      prev.includes(teamId) 
+        ? prev.filter(id => id !== teamId)
+        : [...prev, teamId]
+    )
+  }
+
+  const handleSearch = () => {
+    setSearchParams({ ...searchParams, teams: selectedTeams })
+    performSearch()
+  }
+
   const handleReset = () => {
+    setSelectedTeams([])
     setSearchParams({})
     performSearch()
   }
@@ -100,6 +151,7 @@ export default function TicketSearchForm() {
           value={searchParams.createdBy || ''}
           onChange={(value) => setSearchParams({ ...searchParams, createdBy: value })}
           users={users}
+          disabled={!canViewUsers}
         />
 
         <UserSearchField
@@ -107,6 +159,7 @@ export default function TicketSearchForm() {
           value={searchParams.assignee || ''}
           onChange={(value) => setSearchParams({ ...searchParams, assignee: value })}
           users={users}
+          disabled={!canViewUsers}
         />
 
         <div className="space-y-2">
@@ -135,13 +188,37 @@ export default function TicketSearchForm() {
         />
       </div>
 
-      <div className="flex justify-end gap-2">
-        <Button variant="outline" onClick={handleReset}>
-          Reset filters
-        </Button>
-        <Button onClick={performSearch}>
-          Search Tickets
-        </Button>
+      <div className="flex justify-between items-center">
+        {canViewTeams && userTeams.length > 0 && (
+          <div className="flex gap-4 items-center">
+            <span className="text-sm text-muted-foreground">Include tickets assigned to other members of your teams:</span>
+            <div className="flex gap-4">
+              {userTeams.map((team) => (
+                <div key={team.id} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`team-${team.id}`}
+                    checked={selectedTeams.includes(team.id)}
+                    onCheckedChange={() => handleTeamSelect(team.id)}
+                  />
+                  <label
+                    htmlFor={`team-${team.id}`}
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    {team.name}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        <div className="flex gap-2 ml-auto">
+          <Button variant="outline" onClick={handleReset}>
+            Reset filters
+          </Button>
+          <Button onClick={handleSearch}>
+            Search Tickets
+          </Button>
+        </div>
       </div>
     </div>
   )

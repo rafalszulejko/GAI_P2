@@ -12,6 +12,7 @@ type SearchParams = {
   assignee?: string
   state?: string
   priority?: string
+  teams?: string[]
 }
 
 type SearchContextType = {
@@ -35,10 +36,10 @@ export function useTicketSearch() {
 
 export default function TicketSearchProvider({ 
   children,
-  isCustomer 
+  role 
 }: { 
   children: React.ReactNode
-  isCustomer: boolean 
+  role: 'customer' | 'employee' | 'admin'
 }) {
   const [searchParams, setSearchParams] = useState<SearchParams>({})
   const [results, setResults] = useState<any[] | null>(null)
@@ -60,11 +61,34 @@ export default function TicketSearchProvider({
         .eq('metadata_value.metadata_type', 'PRIORITY')
         .order('created_at', { ascending: false })
 
-      // If user is a customer, only show their tickets
-      if (isCustomer) {
-        const { data: { user } } = await supabase.auth.getUser()
-        if (user) {
-          query = query.eq('created_by', user.id)
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        // Apply role-specific filters
+        switch (role) {
+          case 'customer':
+            query = query.eq('created_by', user.id)
+            break
+          case 'employee':
+            let assigneeIds = [user.id]
+            
+            if (searchParams.teams && searchParams.teams.length > 0) {
+              const { data: teamMembers } = await supabase
+                .from('team_member')
+                .select('user_id')
+                .in('team_id', searchParams.teams)
+              
+              if (teamMembers) {
+                const teamMemberIds = teamMembers.map(member => member.user_id)
+                assigneeIds = Array.from(new Set([...assigneeIds, ...teamMemberIds]))
+              }
+            }
+            
+            query = query.in('assignee', assigneeIds)
+            break
+          case 'admin':
+            // No restrictions for admin
+            break
         }
       }
 
@@ -86,10 +110,6 @@ export default function TicketSearchProvider({
 
       if (searchParams.createdBy) {
         query = query.eq('created_by', searchParams.createdBy)
-      }
-
-      if (searchParams.assignee) {
-        query = query.eq('assignee', searchParams.assignee)
       }
 
       if (searchParams.state) {
@@ -126,7 +146,7 @@ export default function TicketSearchProvider({
     } finally {
       setIsLoading(false)
     }
-  }, [searchParams, isCustomer])
+  }, [searchParams, role])
 
   const value = {
     searchParams,
