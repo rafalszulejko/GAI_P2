@@ -43,6 +43,7 @@ export default async function TicketDetailsPage({
   const canViewTicketInfo = permissions.includes('ticket.info.view')
   const canViewTicketMetadata = permissions.includes('ticket.metadata.view')
   const canReplyToChat = permissions.includes('ticket.chat.reply')
+  const canViewInternalChat = permissions.includes('ticket.chat.internal')
   const canEditState = permissions.includes('ticket.state.edit')
   const canViewCustomerDetails = permissions.includes('customer.details.view')
 
@@ -121,9 +122,11 @@ export default async function TicketDetailsPage({
         <div className="col-span-6">
           {canViewChat ? (
             <div className="space-y-4">
-              <TicketChat ticketId={id} />
+              <TicketChat ticketId={id} canViewInternalChat={canViewInternalChat} />
               {canReplyToChat && ticket.STATE !== 'CLOSED' && (
-                <TicketChatInput ticketId={id} />
+                userRole !== 'customer' || (userRole === 'customer' && ticket.STATE === 'PENDING')
+              ) && (
+                <TicketChatInput ticketId={id} canViewInternalChat={canViewInternalChat} />
               )}
             </div>
           ) : (

@@ -89,6 +89,7 @@ export type Database = {
           created_by: string
           id: string
           ticket_id: string
+          type: Database["public"]["Enums"]["message_type"] | null
         }
         Insert: {
           content: string
@@ -96,6 +97,7 @@ export type Database = {
           created_by?: string
           id?: string
           ticket_id: string
+          type?: Database["public"]["Enums"]["message_type"] | null
         }
         Update: {
           content?: string
@@ -103,6 +105,7 @@ export type Database = {
           created_by?: string
           id?: string
           ticket_id?: string
+          type?: Database["public"]["Enums"]["message_type"] | null
         }
         Relationships: [
           {
@@ -469,7 +472,9 @@ export type Database = {
         | "admin.teams.edit"
         | "team.view"
         | "ticket.team.view"
+        | "ticket.chat.internal"
       app_role: "customer" | "employee" | "admin"
+      message_type: "public" | "internal"
       metadata_type_type: "TEXT" | "DICT"
       priority: "low" | "normal" | "high" | "urgent"
     }

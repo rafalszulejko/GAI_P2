@@ -5,9 +5,20 @@ import { useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { FormMessage } from '@/components/form-message'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { cn } from '@/lib/utils'
 
-export default function TicketChatInput({ ticketId }: { ticketId: string }) {
+type MessageType = 'public' | 'internal'
+
+export default function TicketChatInput({ 
+  ticketId,
+  canViewInternalChat
+}: { 
+  ticketId: string
+  canViewInternalChat: boolean 
+}) {
   const [message, setMessage] = useState('')
+  const [messageType, setMessageType] = useState<MessageType>('public')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const supabase = createClient()
@@ -26,6 +37,7 @@ export default function TicketChatInput({ ticketId }: { ticketId: string }) {
           {
             ticket_id: ticketId,
             content: message.trim(),
+            type: messageType
           },
         ])
 
@@ -40,6 +52,8 @@ export default function TicketChatInput({ ticketId }: { ticketId: string }) {
     }
   }
 
+  const isInternal = messageType === 'internal'
+
   return (
     <form onSubmit={handleSubmit} className="space-y-2">
       <div className="flex gap-2">
@@ -48,10 +62,35 @@ export default function TicketChatInput({ ticketId }: { ticketId: string }) {
           onChange={(e) => setMessage(e.target.value)}
           placeholder="Type your message..."
           disabled={isSubmitting}
+          className={cn(
+            isInternal && "border-orange-500 focus-visible:ring-orange-500"
+          )}
         />
-        <Button type="submit" disabled={isSubmitting || !message.trim()}>
+        <Button 
+          type="submit" 
+          disabled={isSubmitting || !message.trim()}
+          className={cn(
+            isInternal && "bg-orange-500 hover:bg-orange-600"
+          )}
+        >
           Send
         </Button>
+      </div>
+      <div className="flex items-center gap-2">
+        <Select
+          value={messageType}
+          onValueChange={(value) => setMessageType(value as MessageType)}
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Message type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="public">Public message</SelectItem>
+            {canViewInternalChat && (
+              <SelectItem value="internal">Internal note</SelectItem>
+            )}
+          </SelectContent>
+        </Select>
       </div>
       {error && <FormMessage message={{ error }} />}
     </form>

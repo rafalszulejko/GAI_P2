@@ -12,7 +12,13 @@ type Message = Tables<'message'> & {
   user_profile: UserProfile | null
 }
 
-export default function TicketChat({ ticketId }: { ticketId: string }) {
+export default function TicketChat({ 
+  ticketId, 
+  canViewInternalChat 
+}: { 
+  ticketId: string
+  canViewInternalChat: boolean 
+}) {
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -23,7 +29,7 @@ export default function TicketChat({ ticketId }: { ticketId: string }) {
 
     async function loadMessages() {
       try {
-        const { data, error } = await supabase
+        let query = supabase
           .from('message')
           .select(`
             *,
@@ -34,7 +40,13 @@ export default function TicketChat({ ticketId }: { ticketId: string }) {
             )
           `)
           .eq('ticket_id', ticketId)
-          .order('created_at', { ascending: true })
+          
+        // If user can't view internal messages, filter to only public ones
+        if (!canViewInternalChat) {
+          query = query.eq('type', 'public')
+        }
+        
+        const { data, error } = await query.order('created_at', { ascending: true })
 
         if (error) throw error
         setMessages(data || [])
@@ -55,7 +67,7 @@ export default function TicketChat({ ticketId }: { ticketId: string }) {
             event: 'INSERT',
             schema: 'public',
             table: 'message',
-            filter: `ticket_id=eq.${ticketId}`
+            filter: `ticket_id=eq.${ticketId}${!canViewInternalChat ? " and type=eq.public" : ""}`
           },
           async (payload) => {
             const newMessage = payload.new as Tables<'message'>
@@ -83,7 +95,7 @@ export default function TicketChat({ ticketId }: { ticketId: string }) {
         supabase.removeChannel(channel)
       }
     }
-  }, [ticketId])
+  }, [ticketId, canViewInternalChat])
 
   if (isLoading) {
     return (
@@ -123,6 +135,26 @@ export default function TicketChat({ ticketId }: { ticketId: string }) {
                     timeStyle: 'short'
                   })}
                 </span>
+                {message.type === 'internal' && (
+                  <>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="text-orange-500"
+                    >
+                      <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                    <span className="text-xs font-medium text-orange-500">internal</span>
+                  </>
+                )}
               </div>
               <div className="mt-1 prose prose-sm dark:prose-invert max-w-none">
                 <Markdown>{message.content}</Markdown>
