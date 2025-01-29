@@ -6,6 +6,7 @@ import { Tables } from '@/utils/supabase/supabase'
 import { RealtimeChannel } from '@supabase/supabase-js'
 import Markdown from 'react-markdown'
 import { LockIcon } from 'lucide-react'
+import { AgentResponse } from '@/lib/agents/types'
 
 type UserProfile = Pick<Tables<'user_profile'>, 'id' | 'name' | 'email'>
 
@@ -124,38 +125,59 @@ export default function TicketChat({
             No messages yet
           </div>
         ) : (
-          messages.map((message) => (
-            <div key={message.id} className="p-4 border rounded-lg">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <span className="font-medium text-foreground">
-                  {message.user_profile?.name || message.user_profile?.email || 'Unknown user'}
-                </span>
-                <span>
-                  {new Date(message.created_at).toLocaleString(undefined, {
-                    dateStyle: 'medium',
-                    timeStyle: 'short'
-                  })}
-                </span>
-                {message.type === 'internal' && (
-                  <>
-                    <LockIcon className="w-4 h-4 text-orange-500" />
-                    <span className="text-xs font-medium text-orange-500">internal</span>
-                  </>
-                )}
-                {(message.type === 'agent_prompt' || message.type === 'agent_response') && (
-                  <>
-                    <LockIcon className="w-4 h-4 text-red-500" />
-                    <span className="text-xs font-medium text-red-500">
-                      {message.type === 'agent_prompt' ? 'Agent prompt' : 'Agent response'}
-                    </span>
-                  </>
-                )}
+          messages.map((message) => {
+            // Handle agent response messages differently
+            if (message.type === 'agent_response') {
+              try {
+                const agentResponse = JSON.parse(message.content) as AgentResponse
+                return (
+                  <div key={message.id} className="mb-2">
+                    <div className="text-xs text-red-500 mb-1">
+                      Agent: {agentResponse.reasoning}
+                    </div>
+                    <div className="prose prose-sm dark:prose-invert max-w-none">
+                      <Markdown>{agentResponse.message}</Markdown>
+                    </div>
+                  </div>
+                )
+              } catch (e) {
+                console.error('Failed to parse agent response:', e)
+                return null
+              }
+            }
+
+            // Regular message rendering
+            return (
+              <div key={message.id} className="p-4 border rounded-lg">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <span className="font-medium text-foreground">
+                    {message.user_profile?.name || message.user_profile?.email || 'Unknown user'}
+                  </span>
+                  <span>
+                    {new Date(message.created_at).toLocaleString(undefined, {
+                      dateStyle: 'medium',
+                      timeStyle: 'short'
+                    })}
+                  </span>
+                  {message.type === 'internal' && (
+                    <>
+                      <LockIcon className="w-4 h-4 text-orange-500" />
+                      <span className="text-xs font-medium text-orange-500">internal</span>
+                    </>
+                  )}
+                  {message.type === 'agent_prompt' && (
+                    <>
+                      <LockIcon className="w-4 h-4 text-red-500" />
+                      <span className="text-xs font-medium text-red-500">Agent prompt</span>
+                    </>
+                  )}
+                </div>
+                <div className="mt-1 prose prose-sm dark:prose-invert max-w-none">
+                  <Markdown>{message.content}</Markdown>
+                </div>
               </div>
-              <div className="mt-1 prose prose-sm dark:prose-invert max-w-none">
-                <Markdown>{message.content}</Markdown>
-              </div>
-            </div>
-          ))
+            )
+          })
         )}
       </div>
     </div>
