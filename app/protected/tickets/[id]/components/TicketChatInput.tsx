@@ -1,6 +1,5 @@
 'use client'
 
-import { createClient } from '@/utils/supabase/client'
 import { useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -21,32 +20,37 @@ export default function TicketChatInput({
   const [messageType, setMessageType] = useState<MessageType>('public')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const supabase = createClient()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
     if (!message.trim()) return
 
     setIsSubmitting(true)
     setError(null)
 
     try {
-      const { error: insertError } = await supabase
-        .from('message')
-        .insert([
-          {
-            ticket_id: ticketId,
-            content: message.trim(),
-            type: messageType
-          },
-        ])
+      const response = await fetch('/api/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ticket_id: ticketId,
+          content: message.trim(),
+          type: messageType
+        }),
+      })
 
-      if (insertError) throw insertError
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to send message')
+      }
 
       setMessage('')
     } catch (e) {
       console.error('Error sending message:', e)
-      setError('Failed to send message')
+      setError(e instanceof Error ? e.message : 'Failed to send message')
     } finally {
       setIsSubmitting(false)
     }
