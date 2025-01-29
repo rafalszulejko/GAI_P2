@@ -474,7 +474,7 @@ export type Database = {
         | "ticket.team.view"
         | "ticket.chat.internal"
       app_role: "customer" | "employee" | "admin"
-      message_type: "public" | "internal"
+      message_type: "public" | "internal" | "agent_prompt" | "agent_response"
       metadata_type_type: "TEXT" | "DICT"
       priority: "low" | "normal" | "high" | "urgent"
     }

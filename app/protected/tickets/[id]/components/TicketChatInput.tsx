@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/button'
 import { FormMessage } from '@/components/form-message'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { cn } from '@/lib/utils'
+import { Database } from '@/utils/supabase/supabase'
 
-type MessageType = 'public' | 'internal'
+type MessageType = Database['public']['Enums']['message_type']
 
 export default function TicketChatInput({ 
   ticketId,
@@ -57,6 +58,7 @@ export default function TicketChatInput({
   }
 
   const isInternal = messageType === 'internal'
+  const isAgent = messageType === 'agent_prompt'
 
   return (
     <form onSubmit={handleSubmit} className="space-y-2">
@@ -67,14 +69,16 @@ export default function TicketChatInput({
           placeholder="Type your message..."
           disabled={isSubmitting}
           className={cn(
-            isInternal && "border-orange-500 focus-visible:ring-orange-500"
+            isInternal && "border-orange-500 focus-visible:ring-orange-500",
+            isAgent && "border-red-500 focus-visible:ring-red-500"
           )}
         />
         <Button 
           type="submit" 
           disabled={isSubmitting || !message.trim()}
           className={cn(
-            isInternal && "bg-orange-500 hover:bg-orange-600"
+            isInternal && "bg-orange-500 hover:bg-orange-600",
+            isAgent && "bg-red-500 hover:bg-red-600"
           )}
         >
           Send
@@ -91,7 +95,10 @@ export default function TicketChatInput({
           <SelectContent>
             <SelectItem value="public">Public message</SelectItem>
             {canViewInternalChat && (
-              <SelectItem value="internal">Internal note</SelectItem>
+              <>
+                <SelectItem value="internal">Internal note</SelectItem>
+                <SelectItem value="agent_prompt">Agent prompt</SelectItem>
+              </>
             )}
           </SelectContent>
         </Select>
