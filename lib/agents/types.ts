@@ -1,6 +1,6 @@
 export interface AgentResponse {
   // Free-form text the agent wants to convey to the user, e.g. explanation or summary
-  message: string
+  message?: string
 
   // A place to store any relevant "thought process" or "reasoning" 
   // that might be surfaced to the user or used for logging

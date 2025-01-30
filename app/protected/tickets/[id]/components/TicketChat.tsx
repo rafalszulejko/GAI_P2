@@ -132,11 +132,26 @@ export default function TicketChat({
                 const agentResponse = JSON.parse(message.content) as AgentResponse
                 return (
                   <div key={message.id} className="mb-2">
-                    <div className="text-xs text-red-500 mb-1">
-                      Agent: {agentResponse.reasoning}
+                    <div className="flex gap-2 items-center text-xs text-red-500 mb-1">
+                      <span>Agent:</span>
+                      <span>{agentResponse.reasoning}</span>
+                      {agentResponse.proposedTool && (
+                        <>
+                          <span className="text-red-500">•</span>
+                          <span className="text-red-500">{agentResponse.proposedTool}</span>
+                        </>
+                      )}
                     </div>
-                    <div className="prose prose-sm dark:prose-invert max-w-none">
-                      <Markdown>{agentResponse.message}</Markdown>
+                    <div className="text-xs space-y-0.5">
+                      {agentResponse.toolArguments ? (
+                        <div>
+                          {Object.entries(agentResponse.toolArguments).map(([key, value]) => (
+                            <div key={key}>{key}: {typeof value === 'string' ? value : JSON.stringify(value)}</div>
+                          ))}
+                        </div>
+                      ) : agentResponse.message ? (
+                        <div>{agentResponse.message}</div>
+                      ) : null}
                     </div>
                   </div>
                 )

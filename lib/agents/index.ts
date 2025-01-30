@@ -46,32 +46,45 @@ export async function promptAgent({ ticketId, prompt }: { ticketId: string, prom
       await pushAgentResponse({
         ticketId,
         message: msg.content,
-        reasoning: "Agent response",
+        reasoning: "Response",
         isFinal: false
       });
     } else if (msg?.tool_calls?.length > 0) {
       console.log(msg.tool_calls);
-      await pushAgentResponse({
-        ticketId,
-        message: JSON.stringify(msg.tool_calls, null, 2),
-        reasoning: "Agent tool call",
-        isFinal: false
-      });
+      for (const toolCall of msg.tool_calls) {
+        await pushAgentResponse({
+          ticketId,
+          message: undefined,
+          reasoning: "Tool call",
+          proposedTool: toolCall.name,
+          toolArguments: toolCall.args,
+          isFinal: false
+        });
+      }
     } else {
       await pushAgentResponse({
         ticketId,
         message: msg,
-        reasoning: "Agent response",
+        reasoning: "Response",
         isFinal: true
       });
     }
   }
 } 
 
-export async function pushAgentResponse({ ticketId, message, reasoning, isFinal = true }: { 
+export async function pushAgentResponse({ 
+  ticketId, 
+  message, 
+  reasoning, 
+  proposedTool,
+  toolArguments,
+  isFinal = true 
+}: { 
   ticketId: string, 
-  message: string,
+  message?: string,
   reasoning: string,
+  proposedTool?: string,
+  toolArguments?: Record<string, any>,
   isFinal?: boolean 
 }) {
   const supabase = await createClient();
@@ -83,6 +96,8 @@ export async function pushAgentResponse({ ticketId, message, reasoning, isFinal 
       content: JSON.stringify({
         message,
         reasoning,
+        proposedTool,
+        toolArguments,
         isFinal
       } satisfies AgentResponse),
       type: "agent_response"
