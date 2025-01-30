@@ -1,10 +1,16 @@
 import { createClient } from "@/utils/supabase/server"
 import { AgentResponse } from "./types"
 import { ChatOpenAI } from "@langchain/openai"
+import { createTicketStateTool } from "./tools";
+import { createReactAgent } from "@langchain/langgraph/prebuilt";
+import { DynamicStructuredTool } from "langchain/tools";
+import { z } from "zod";
 
 export async function promptAgent({ ticketId, prompt }: { ticketId: string, prompt: string }) {
   const supabase = await createClient()
-  const llm = new ChatOpenAI()
+  const llm = new ChatOpenAI({
+    model: "gpt-4o",
+  });
 
   // Fetch ticket
   const { data: ticket } = await supabase
@@ -13,19 +19,74 @@ export async function promptAgent({ ticketId, prompt }: { ticketId: string, prom
     .eq("id", ticketId)
     .single()
 
-  // Get summary
-  const result = await llm.invoke(`${prompt} Context: Title: ${ticket?.title} Description: ${ticket?.description ?? "No description"}`)
+  if (!ticket) {
+    throw new Error("Ticket not found");
+  }
 
-  // Save response
-  await supabase
+  const agent = createReactAgent({ 
+    llm: llm, 
+    tools: [createTicketStateTool(ticketId)] 
+  });
+
+  let inputs = { messages: [{ role: "user", content: `Context: Ticket title: ${ticket.title}, Description: ${ticket.description}\n\nUser request: ${prompt}` }] };
+
+  // Get summary
+  let stream = await agent.stream(inputs, {
+    streamMode: "values",
+    });
+
+  for await (const { messages } of stream) {
+    let msg = messages[messages?.length - 1];
+    if (msg?.content) {
+      console.log(msg.content);
+      await pushAgentResponse({
+        ticketId,
+        message: msg.content,
+        reasoning: "Agent response",
+        isFinal: false
+      });
+    } else if (msg?.tool_calls?.length > 0) {
+      console.log(msg.tool_calls);
+      await pushAgentResponse({
+        ticketId,
+        message: JSON.stringify(msg.tool_calls, null, 2),
+        reasoning: "Agent tool call",
+        isFinal: false
+      });
+    } else {
+      await pushAgentResponse({
+        ticketId,
+        message: msg,
+        reasoning: "Agent response",
+        isFinal: true
+      });
+    }
+  }
+} 
+
+export async function pushAgentResponse({ ticketId, message, reasoning, isFinal = true }: { 
+  ticketId: string, 
+  message: string,
+  reasoning: string,
+  isFinal?: boolean 
+}) {
+  const supabase = await createClient();
+  
+  const { error } = await supabase
     .from("message")
     .insert({
       ticket_id: ticketId,
       content: JSON.stringify({
-        message: result.content.toString(),
-        reasoning: "Basic ticket summary",
-        isFinal: true
+        message,
+        reasoning,
+        isFinal
       } satisfies AgentResponse),
       type: "agent_response"
-    })
-} 
+    });
+
+  if (error) {
+    console.error("Error pushing agent response:", error.message, error.details);
+    throw error;
+  }
+}
+
