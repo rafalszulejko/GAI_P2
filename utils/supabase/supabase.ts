@@ -268,7 +268,6 @@ export type Database = {
           created_by: string
           description: string | null
           id: string
-          priority: Database["public"]["Enums"]["priority"] | null
           STATE: string
           title: string
           type: string | null
@@ -279,7 +278,6 @@ export type Database = {
           created_by: string
           description?: string | null
           id?: string
-          priority?: Database["public"]["Enums"]["priority"] | null
           STATE: string
           title: string
           type?: string | null
@@ -290,7 +288,6 @@ export type Database = {
           created_by?: string
           description?: string | null
           id?: string
-          priority?: Database["public"]["Enums"]["priority"] | null
           STATE?: string
           title?: string
           type?: string | null
@@ -476,7 +473,6 @@ export type Database = {
       app_role: "customer" | "employee" | "admin"
       message_type: "public" | "internal" | "agent_prompt" | "agent_response"
       metadata_type_type: "TEXT" | "DICT"
-      priority: "low" | "normal" | "high" | "urgent"
     }
     CompositeTypes: {
       [_ in never]: never

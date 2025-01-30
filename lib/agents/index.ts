@@ -1,7 +1,8 @@
 import { createClient } from "@/utils/supabase/server"
 import { AgentResponse } from "./types"
 import { ChatOpenAI } from "@langchain/openai"
-import { createTicketStateTool } from "./tools";
+import { createUpdateTicketStateTool } from "./tools/updateTicketState";
+import { createUpdateTicketPriorityTool } from "./tools/updateTicketPriority";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import { DynamicStructuredTool } from "langchain/tools";
 import { z } from "zod";
@@ -25,7 +26,10 @@ export async function promptAgent({ ticketId, prompt }: { ticketId: string, prom
 
   const agent = createReactAgent({ 
     llm: llm, 
-    tools: [createTicketStateTool(ticketId)] 
+    tools: [
+      createUpdateTicketStateTool(ticketId),
+      createUpdateTicketPriorityTool(ticketId)
+    ] 
   });
 
   let inputs = { messages: [{ role: "user", content: `Context: Ticket title: ${ticket.title}, Description: ${ticket.description}\n\nUser request: ${prompt}` }] };
