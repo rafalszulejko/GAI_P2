@@ -3,9 +3,8 @@ import { AgentResponse } from "./types"
 import { ChatOpenAI } from "@langchain/openai"
 import { createUpdateTicketStateTool } from "./tools/updateTicketState";
 import { createUpdateTicketPriorityTool } from "./tools/updateTicketPriority";
+import { createSendPublicMessageTool } from "./tools/sendPublicMessage";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
-import { DynamicStructuredTool } from "langchain/tools";
-import { z } from "zod";
 
 export async function promptAgent({ ticketId, prompt }: { ticketId: string, prompt: string }) {
   const supabase = await createClient()
@@ -28,7 +27,8 @@ export async function promptAgent({ ticketId, prompt }: { ticketId: string, prom
     llm: llm, 
     tools: [
       createUpdateTicketStateTool(ticketId),
-      createUpdateTicketPriorityTool(ticketId)
+      createUpdateTicketPriorityTool(ticketId),
+      createSendPublicMessageTool(ticketId)
     ] 
   });
 
