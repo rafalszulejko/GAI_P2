@@ -15,13 +15,38 @@ export async function promptAgent({ ticketId, prompt }: { ticketId: string, prom
   // Fetch ticket
   const { data: ticket } = await supabase
     .from("ticket")
-    .select("title, description")
+    .select("title, description, STATE")
     .eq("id", ticketId)
     .single()
 
   if (!ticket) {
     throw new Error("Ticket not found");
   }
+
+  // Fetch metadata values
+  const { data: metadataValues } = await supabase
+    .from("metadata_value")
+    .select(`
+      value,
+      metadata_type(
+        name
+      )
+    `)
+    .eq("ticket_id", ticketId);
+
+  type MetadataResponse = {
+    value: string;
+    metadata_type: {
+      name: string;
+    };
+  };
+
+  const formattedMetadata = (metadataValues as MetadataResponse[] | null)?.reduce((acc, mv) => {
+    if (mv.metadata_type?.name) {
+      acc[mv.metadata_type.name] = mv.value;
+    }
+    return acc;
+  }, {} as Record<string, string>) || {};
 
   const agent = createReactAgent({ 
     llm: llm, 
@@ -32,7 +57,16 @@ export async function promptAgent({ ticketId, prompt }: { ticketId: string, prom
     ] 
   });
 
-  let inputs = { messages: [{ role: "user", content: `Context: Ticket title: ${ticket.title}, Description: ${ticket.description}\n\nUser request: ${prompt}` }] };
+  let inputs = { messages: [{ role: "user", content: `Context: You are an AI agent helping employees with responding to customer requests. 
+Ticket title: ${ticket.title}
+Description: ${ticket.description}
+Current state: ${ticket.STATE}
+${Object.entries(formattedMetadata).length > 0 ? `Metadata:\n${Object.entries(formattedMetadata).map(([key, value]) => `${key}: ${value}`).join('\n')}` : ''}
+
+User request: ${prompt}. 
+
+If you feel unsure about the user request, if it is vague or need extra information before performing an action, ask for clarification in another prompt. 
+If your toolset doesn't cover the user request, ask for clarification in another prompt or just inform the user without using any tools.` }] };
 
   // Get summary
   let stream = await agent.stream(inputs, {

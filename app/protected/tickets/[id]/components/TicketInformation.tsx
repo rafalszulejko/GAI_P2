@@ -56,6 +56,11 @@ export default function TicketInformation({
         </div>
 
         <div>
+          <div className="text-sm text-muted-foreground">Description</div>
+          <div className="font-medium whitespace-pre-wrap">{ticket.description || 'No description provided'}</div>
+        </div>
+
+        <div>
           <div className="text-sm text-muted-foreground">State</div>
           <div className="font-medium">
             <Badge variant="outline">{ticket.STATE}</Badge>

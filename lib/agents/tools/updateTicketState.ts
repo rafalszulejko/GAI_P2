@@ -40,7 +40,7 @@ export const updateTicketStateTool = new DynamicStructuredTool({
 export function createUpdateTicketStateTool(ticketId: string) {
   return new DynamicStructuredTool({
     name: "update_ticket_state",
-    description: "Updates the state of the current ticket",
+    description: "Updates the state of the current ticket. Use PENDING when asking customer for more information or when asking him to confirm solution of the ticket.",
     schema: z.object({
       newState: z.string().describe("The new state to set for the ticket"),
     }),
